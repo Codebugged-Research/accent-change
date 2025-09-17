@@ -127,7 +127,10 @@ def split_audio_chunks(audio_path, chunk_duration=300):
             "ffmpeg", "-i", audio_path,
             "-ss", str(start_time),
             "-t", str(current_chunk_duration),
-            "-c", "copy", chunk_file, "-y"
+            "-af", "afftdn", 
+            "-ar", "44100",
+            "-ac", "2", 
+            chunk_file, "-y"
         ], check=True, capture_output=True)
         
         chunk_files.append(chunk_file)
