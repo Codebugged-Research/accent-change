@@ -18,11 +18,9 @@ COPY requirements.txt .
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy app code
+
 COPY . .
 
-# Expose Cloud Run port
 EXPOSE 8080
 
-# Run Streamlit app
 CMD ["streamlit", "run", "colab_accent_converter.py", "--server.port=$PORT", "--server.address=0.0.0.0"]
