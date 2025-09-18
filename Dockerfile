@@ -1,26 +1,18 @@
-# Use NVIDIA CUDA base image with Python
-FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
+# Use Google prebuilt GPU PyTorch image
+FROM gcr.io/deeplearning-platform-release/pytorch-gpu.2-1
 
-# Install Python + tools
-RUN apt-get update && apt-get install -y \
-    python3 python3-pip ffmpeg git wget && \
-    rm -rf /var/lib/apt/lists/*
-
-# Set Python3 as default
-RUN ln -s /usr/bin/python3 /usr/bin/python
-
-# Set working directory
 WORKDIR /app
 
-# Copy requirements first
+# Copy requirements
 COPY requirements.txt .
-
-# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-
+# Copy app
 COPY . .
 
+# Expose Cloud Run port
 EXPOSE 8080
 
-CMD ["streamlit", "run", "colab_accent_converter.py", "--server.port=$PORT", "--server.address=0.0.0.0"]
+# Start Streamlit
+ENTRYPOINT ["streamlit", "run", "colab_accent_converter.py"]
+CMD ["--server.port=8080", "--server.address=0.0.0.0"]
