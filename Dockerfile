@@ -1,23 +1,28 @@
-# Use NVIDIA CUDA base image with PyTorch
-FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+# Use NVIDIA CUDA base image with Python
+FROM nvidia/cuda:12.2.0-runtime-ubuntu22.04
 
-# Install system dependencies
+# Install Python + tools
 RUN apt-get update && apt-get install -y \
-    python3 python3-pip ffmpeg git curl && \
+    python3 python3-pip ffmpeg git wget && \
     rm -rf /var/lib/apt/lists/*
+
+# Set Python3 as default
+RUN ln -s /usr/bin/python3 /usr/bin/python
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements and install
+# Copy requirements first
 COPY requirements.txt .
-RUN pip3 install --no-cache-dir -r requirements.txt
 
-# Copy your Streamlit app code into container
+# Install dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy app code
 COPY . .
 
-# Streamlit runs on port 8080 (Cloud Run requirement)
-ENV PORT=8080
+# Expose Cloud Run port
+EXPOSE 8080
 
-# Run Streamlit
-CMD ["streamlit", "run", "app.py", "--server.port=8080", "--server.headless=true"]
+# Run Streamlit app
+CMD ["streamlit", "run", "colab_accent_converter.py", "--server.port=$PORT", "--server.address=0.0.0.0"]
