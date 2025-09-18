@@ -1,0 +1,6 @@
+streamlit
+requests
+ffmpeg-python
+torch
+torchaudio
+transformers
