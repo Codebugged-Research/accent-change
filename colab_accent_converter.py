@@ -5,12 +5,10 @@ import os
 import subprocess
 import math
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from pyngrok import ngrok
+
 import uuid
-import threading
 import time
 
-ngrok.set_auth_token("31EFmh5Zw2CX9GQ6yIsHwPVfkoT_2XfTF9Xq3pKzK7y3hUJio")
 
 def process_audio_local(audio_file, gender):
     unique_id = str(uuid.uuid4())[:8]
@@ -73,6 +71,7 @@ def process_audio_local(audio_file, gender):
             os.remove(output_path)
         raise Exception(f"Processing error: {str(e)}")
 
+
 def download_video(url, output_path):
     with requests.get(url, stream=True) as response:
         response.raise_for_status()
@@ -93,6 +92,7 @@ def download_video(url, output_path):
     
     return output_path
 
+
 def extract_audio(video_path, audio_path):
     subprocess.run([
         "ffmpeg", "-i", video_path,
@@ -102,12 +102,14 @@ def extract_audio(video_path, audio_path):
     ], check=True, capture_output=True)
     return audio_path
 
+
 def get_audio_duration(audio_path):
     result = subprocess.run([
         "ffprobe", "-v", "quiet", "-show_entries", 
         "format=duration", "-of", "csv=p=0", audio_path
     ], capture_output=True, text=True, check=True)
     return float(result.stdout.strip())
+
 
 def split_audio_chunks(audio_path, chunk_duration=300):
     duration = get_audio_duration(audio_path)
@@ -137,6 +139,7 @@ def split_audio_chunks(audio_path, chunk_duration=300):
     
     return chunk_files
 
+
 def combine_audio_chunks(processed_chunks, output_path):
     if not processed_chunks:
         return None
@@ -165,6 +168,7 @@ def combine_audio_chunks(processed_chunks, output_path):
     
     return output_path
 
+
 def replace_video_audio(video_path, audio_path, output_path):
     subprocess.run([
         "ffmpeg", "-i", video_path, "-i", audio_path,
@@ -172,6 +176,7 @@ def replace_video_audio(video_path, audio_path, output_path):
         "-map", "1:a:0", "-shortest", output_path, "-y"
     ], check=True, capture_output=True)
     return output_path
+
 
 def main():
     st.set_page_config(page_title="Accent Changer")
@@ -259,31 +264,6 @@ def main():
             except Exception as e:
                 st.error(f"Error: {str(e)}")
 
-def start_streamlit_with_ngrok():
-    current_file = os.path.abspath(__file__)
-    
-    subprocess.Popen([
-        "streamlit", "run", current_file,
-        "--server.headless=true", 
-        "--server.port=8501"
-    ])
-    
-    time.sleep(10)
-    
-    public_url = ngrok.connect(8501)
-    print(f"🎉 Streamlit Dashboard: {public_url}")
 
 if __name__ == "__main__":
-    import sys
-    
-    if len(sys.argv) > 1 and sys.argv[1] == "init":
-        print("🚀 Starting Accent Converter...")
-        start_streamlit_with_ngrok()
-        
-        try:
-            while True:
-                time.sleep(1)
-        except KeyboardInterrupt:
-            print("Service stopped.")
-    else:
-        main()
+    main()
